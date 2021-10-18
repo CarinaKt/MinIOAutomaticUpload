@@ -9,6 +9,9 @@ public class Main {
     public static void main(String[] args)
             throws IOException, NoSuchAlgorithmException, InvalidKeyException {
 
+        // watch for changes
+        new FileWatcher().watcher();
+
         try {
             // Connection to your MinIo Server
             MinioClient minioClient = MinIO.connection();
