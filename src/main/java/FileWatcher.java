@@ -1,5 +1,6 @@
 import java.io.IOException;
 import java.nio.file.*;
+import static java.nio.file.StandardWatchEventKinds.*;
 
 public class FileWatcher {
 
@@ -8,13 +9,13 @@ public class FileWatcher {
 
     public void watcher() {
         try (final WatchService watchService = FileSystems.getDefault().newWatchService()) {
-            //events listen for
+            // listen for events
             final WatchKey watchKey = path.register(
                     watchService,
-                    StandardWatchEventKinds.ENTRY_MODIFY,
-                    StandardWatchEventKinds.ENTRY_CREATE,
-                    StandardWatchEventKinds.ENTRY_DELETE
-                    );
+                   // ENTRY_MODIFY, not in use at the moment
+                    ENTRY_CREATE // new an rename
+            );
+
             while (true) {
                 final WatchKey wk = watchService.take();
                 for (WatchEvent<?> event : wk.pollEvents()) {
@@ -28,9 +29,7 @@ public class FileWatcher {
                     System.out.println("Key has been unregisterede");
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
