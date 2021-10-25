@@ -30,6 +30,20 @@ public class MinIO {
     }
 
     /**
+     * defines the file to upload
+     * Format:
+     * @param path       = "C:/Users/name/Documents/test.txt"
+     * @param fileName   = "test.txt"
+     * @param bucketName = "mytest"
+     */
+    public static void setDataToUpdate(MinioClient minioClient, String path, String fileName, String bucketName)
+            throws IOException, ErrorResponseException, InsufficientDataException, InternalException,
+            InvalidResponseException, NoSuchAlgorithmException, XmlParserException, ServerException, InvalidKeyException {
+
+        upload(minioClient, path, fileName, bucketName.toLowerCase());
+    }
+
+    /**
      * creates a new bucked if needed, and uploads the given File
      *
      * @param minioClient: connection to the Cloud
@@ -44,11 +58,9 @@ public class MinIO {
      * @throws XmlParserException
      * @throws ErrorResponseException
      */
-    public static void upload(MinioClient minioClient) throws IOException, ServerException, InsufficientDataException, InternalException, InvalidResponseException, InvalidKeyException, NoSuchAlgorithmException, XmlParserException, ErrorResponseException {
-
-        String file = "C:/Users/Carina/Documents/test.txt";
-        String fileName = "test.txt";
-        String bucketName = "mytest";
+    private static void upload(MinioClient minioClient, String file, String fileName, String bucketName)
+            throws IOException, ServerException, InsufficientDataException, InternalException, InvalidResponseException,
+            InvalidKeyException, NoSuchAlgorithmException, XmlParserException, ErrorResponseException {
 
         // Create a new bucket if not exist
         boolean found =
@@ -66,7 +78,7 @@ public class MinIO {
                         // take the last part behind / as name
                         .object(fileName)
                         // file to upload
-                        .filename(file)
+                        .filename(file + "/" + fileName)
                         .build());
         System.out.println(
                 "Successfully uploaded to bucket.");
