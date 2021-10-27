@@ -23,12 +23,16 @@ public class FileWatcher {
         return sc.nextLine();
     }
 
+    public void searchDirectory(String name) {
+        FileSystems.getDefault().getFileStores();
+    }
+
     // Directory to trac
     final String directory = getDirectory();
     // the directory path to watch on
     final Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"), directory);
 
-    public void watcher(MinioClient minioClient) {
+    public void watcher() {
         try (final WatchService watchService = FileSystems.getDefault().newWatchService()) {
             // listen for events
             final WatchKey watchKey = path.register(
@@ -44,9 +48,15 @@ public class FileWatcher {
                     //the context is always a Path.
                     final Path changed = (Path) event.context();
                     String fileDirectory = path.getFileName().toString();
-                    System.out.println(changed + " " + fileDirectory);
                     // send path to MInIO API
-                    MinIO.setDataToUpdate(minioClient, path.toString(), changed.toString(), fileDirectory);
+                    Path finalPath = Path.of(path + "\\" + changed);
+                    System.out.println(Files.isDirectory(finalPath) + changed.toString());
+
+                    if(!Files.isDirectory(finalPath)) { // File
+                        MinIO.setDataToUpdate(path.toString(), changed.toString(), fileDirectory);
+                    }else if (Files.isDirectory(finalPath)){ // Directory
+                        MinIO.uploadDirectory(fileDirectory, changed.toString());
+                    }
                 }
                 // reset the key
                 boolean valid = wk.reset();

@@ -9,7 +9,7 @@ public class Main {
         // Connection to your MinIo Server
         MinioClient minioClient = MinIO.connection();
         // watch for changes
-        new FileWatcher().watcher(minioClient);
+        new FileWatcher().watcher();
 
     }
 }
