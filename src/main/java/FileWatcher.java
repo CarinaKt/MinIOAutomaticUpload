@@ -27,17 +27,31 @@ public class FileWatcher {
         FileSystems.getDefault().getFileStores();
     }
 
+
+/*    private void registerRecursive(final Path root) throws IOException {
+        // register all subfolders
+        Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                dir.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    }*/
+
+
     // Directory to trac
     final String directory = getDirectory();
     // the directory path to watch on
     final Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"), directory);
 
     public void watcher() {
-        try (final WatchService watchService = FileSystems.getDefault().newWatchService()) {
+        try ( WatchService watchService = FileSystems.getDefault().newWatchService()) {
             // listen for events
             final WatchKey watchKey = path.register(
                     watchService,
-                    ENTRY_CREATE // new or rename
+                    ENTRY_CREATE ,// new or rename
+                    ENTRY_MODIFY
             );
 
             System.out.println("Watching " + directory + " for changes");
@@ -50,11 +64,13 @@ public class FileWatcher {
                     String fileDirectory = path.getFileName().toString();
                     // send path to MInIO API
                     Path finalPath = Path.of(path + "\\" + changed);
-                    System.out.println(Files.isDirectory(finalPath) + changed.toString());
+                    System.out.println(event.kind());
+                    System.out.println("prinnt: "+Files.isDirectory(finalPath) +" "+ changed.toString() +" "+finalPath);
 
                     if(!Files.isDirectory(finalPath)) { // File
-                        MinIO.setDataToUpdate(path.toString(), changed.toString(), fileDirectory);
+                        MinIO.setDataToUpdate(finalPath.toString(), changed.toString(), fileDirectory, path.toString());
                     }else if (Files.isDirectory(finalPath)){ // Directory
+
                         MinIO.uploadDirectory(fileDirectory, changed.toString());
                     }
                 }

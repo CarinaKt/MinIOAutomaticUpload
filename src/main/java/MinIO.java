@@ -1,8 +1,6 @@
 import io.minio.*;
 import io.minio.errors.*;
-import java.io.ByteArrayInputStream;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
@@ -34,14 +32,33 @@ public class MinIO {
      * Format:
      *
      * @param path       = "C:/Users/name/Documents/test.txt"
-     * @param fileName   = "test.txt"
+     * @param fileName   = "ordner/test.txt"
      * @param bucketName = "mytest"
      */
-    public static void setDataToUpdate(String path, String fileName, String bucketName)
+    public static void setDataToUpdate(String path, String fileName, String bucketName, String rootPath)
             throws IOException, ErrorResponseException, InsufficientDataException, InternalException,
             InvalidResponseException, NoSuchAlgorithmException, XmlParserException, ServerException, InvalidKeyException {
+        // formats fileName fro, "ordner\datei.txt" to "ordner/"
+        fileName = path.substring(rootPath.length()+1);
+        System.out.println(fileName);
+        fileName = fileName.replace("\\", "/");
+        System.out.println(fileName);
 
         uploadFiles(path, fileName, bucketName.toLowerCase());
+    }
+
+
+
+    public static void setDirectoryToUpdate(String path, String directoryName, String bucketName, String rootPath)
+            throws IOException, ErrorResponseException, InsufficientDataException, InternalException,
+            InvalidResponseException, NoSuchAlgorithmException, XmlParserException, ServerException, InvalidKeyException {
+        // formats fileName fro, "ordner\datei.txt" to "ordner/"
+        directoryName = path.substring(rootPath.length()+1);
+        System.out.println(directoryName);
+        directoryName = directoryName.replace("\\", "/");
+        System.out.println(directoryName);
+
+        uploadDirectory(bucketName.toLowerCase(), directoryName);
     }
 
     /**
@@ -71,20 +88,23 @@ public class MinIO {
             minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
 
         } else {
-            System.out.println("Bucket '" + bucketName + "' already exists.");
+            System.out.println("Bucket '" + bucketName + "' already exists.1");
         }
 
         minioClient.uploadObject(
                 UploadObjectArgs.builder()
                         .bucket(bucketName)
-                        // take the last part behind / as name
+                        // take the last part behind / as name ordenr/document
+                        // TODO: diffenez zwischen bucket und file als filename übergeben -> Obrder
                         .object(fileName)
                         // file to upload
-                        .filename(file + "/" + fileName)
+                        .filename(file)
                         .build());
+        System.out.println("bucket: " + bucketName + " " + fileName + " "+ file);
         System.out.println(
                 "Successfully uploaded to bucket.");
     }
+
 
     /**
      * Adds a Directory to a (existing) Bucket
@@ -111,10 +131,11 @@ public class MinIO {
             minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
 
         } else {
-            System.out.println("Bucket '" + bucketName + "' already exists.");
+            System.out.println("Bucket '" + bucketName + "' already exists.1");
         }
 
         // Create object ends with '/' (also called as folder or directory).
+        // TODO: create unterordner in ordner
         minioClient.putObject(
                 PutObjectArgs.builder().bucket(bucketName).object(directoryName + "/").stream(
                         new ByteArrayInputStream(new byte[]{}), 0, -1)
