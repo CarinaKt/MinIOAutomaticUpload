@@ -1,7 +1,5 @@
 import io.minio.MinioClient;
 
-import java.io.IOException;
-
 
 public class Main {
     public static void main(String[] args) throws Exception {
@@ -10,7 +8,7 @@ public class Main {
         MinioClient minioClient = MinIO.connection();
         // watch for changes
         //new FileWatcher().watcher();
-        new WatchServiceRecursiveExample().watcher();
+        new WatchServiceRecursive().watcher();
 
     }
 }
