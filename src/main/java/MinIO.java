@@ -38,7 +38,7 @@ public class MinIO {
     public static void setDataToUpdate(String path, String fileName, String bucketName, String rootPath)
             throws IOException, ErrorResponseException, InsufficientDataException, InternalException,
             InvalidResponseException, NoSuchAlgorithmException, XmlParserException, ServerException, InvalidKeyException {
-        // formats fileName fro, "ordner\datei.txt" to "ordner/"
+        // formats fileName from, "ordner\datei.txt" to "ordner/"
         fileName = path.substring(rootPath.length()+1);
         System.out.println(fileName);
         fileName = fileName.replace("\\", "/");
@@ -145,12 +145,3 @@ public class MinIO {
     }
 }
 
-
-/**
- * // Upload unknown sized input stream.
- * minioClient.putObject(
- * PutObjectArgs.builder().bucket("my-bucketname").object("my-objectname").stream(
- * inputStream, -1, 10485760)
- * .contentType("video/mp4")
- * .build());
- **/

@@ -50,8 +50,14 @@ public class WatchServiceRecursive {
 
     // Directory to trac
     final String directory = getProperty("path");
+    // Handel Uploaded Data
+    final boolean removeFromLocal = getProperty("removeExportedData").equals("true");
+    // Handel existing Data
+    final boolean uploadExistingData = getProperty("uploadExistingData").equals("true");
+
     // the directory path to watch on
     final Path rootPath = Path.of(directory);
+
 
 
     public void watcher () {
@@ -109,6 +115,9 @@ public class WatchServiceRecursive {
 
                     if(!Files.isDirectory(path)) { // File
                         MinIO.setDataToUpdate(path.toString(), changed.toString(), fileDirectory, rootPath.toString());
+                        if(removeFromLocal){
+                            deleteLocal(path);
+                        }
                     }else if (Files.isDirectory(path)) { // Directory
                         registerDir(path, watchService);
                         MinIO.setDirectoryToUpdate(path.toString(), changed.toString(), fileDirectory, rootPath.toString());
@@ -121,6 +130,18 @@ public class WatchServiceRecursive {
             if(keyPathMap.isEmpty()){
                 break;
             }
+        }
+    }
+
+    /**
+     * Removes the given path from the local Filesystem
+     * @param path
+     */
+    private void deleteLocal(Path path){
+        if(Files.exists(path)) {
+            File f = new File(path.toString());
+            f.delete();
+            logger.info("delete from local: " + path);
         }
     }
 }

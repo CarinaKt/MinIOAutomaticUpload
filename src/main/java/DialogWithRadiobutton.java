@@ -120,7 +120,6 @@ public class DialogWithRadiobutton extends JDialog {
             myDialog.setVisible(true);
         } else {
             Logger.getAnonymousLogger().info("File already exists: " + path);
-            System.exit(0);
         }
     }
 
