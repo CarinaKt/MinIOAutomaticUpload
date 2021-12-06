@@ -1,39 +1,66 @@
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
+import java.util.Properties;
+import java.util.logging.Logger;
 
 
 public class WatchServiceRecursive {
+    // Logging
+    Logger logger =  Logger.getLogger(this.getClass().getName());
     private static Map<WatchKey, Path> keyPathMap = new HashMap<>();
 
 
     /**
-     * Reads in the Directory Name from the command line
-     * TODO: Validation
+     * Reads in the Directory Path from the .ini file in
+     * C:/User/Name/AppData/MinIo
+     * @param key- the property to read out of the file
+     *              "path": string path of Folder to track an d upload
+     *              "removeExportedData": true/false
+     *              "uploadExistingData": true/false
      * @return
      */
-    private String getDirectory() {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Enter a directory: ");
-        //reads directory nme
-        return sc.nextLine();
+    private String getProperty(String key) {
+        String propertyValue = "";
+        Properties prop = new Properties();
+
+        try {
+            Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"),"\\AppData\\MinIO\\uploadConfig.ini");
+            prop.load(new FileReader(path.toString()));
+
+            propertyValue = prop.getProperty(key);
+            logger.info("read property Value: " + propertyValue + " from key: " + key);
+
+        } catch (FileNotFoundException e) {
+            logger.warning("An error occurred: " + e);
+            e.printStackTrace();
+        } catch (IOException e) {
+            logger.warning("An error occurred: " + e);
+            e.printStackTrace();
+        }
+
+        //returns directory name
+        return propertyValue;
     }
 
 
     // Directory to trac
-    final String directory = getDirectory();
+    final String directory = getProperty("path");
     // the directory path to watch on
-    final Path rootPath = FileSystems.getDefault().getPath(System.getProperty("user.home"), directory);
+    final Path rootPath = Path.of(directory);
 
 
-    public void watcher () throws Exception {
+    public void watcher () {
 
         try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
             registerDir(rootPath, watchService);
             startListening(watchService);
+        } catch (Exception e) { // registerDir(rootPath, watchService);
+            e.printStackTrace();
         }
     }
 
@@ -41,11 +68,10 @@ public class WatchServiceRecursive {
             IOException {
 
         if (!Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)) {
-
             return;
         }
 
-        System.out.println("registering: " + path);
+        logger.info("registering: " + path);
         // TODO: lade vorhandenes in die Cloud
 
         WatchKey key = path.register(watchService,
@@ -62,10 +88,8 @@ public class WatchServiceRecursive {
         while (true) {
             WatchKey wk = watchService.take();
             for (WatchEvent<?> event : wk.pollEvents()) {
-                System.out.printf("Event... kind=%s, count=%d, context=%s Context type=%s%n",
-                        event.kind(),
-                        event.count(), event.context(),
-                        ((Path) event.context()).getClass());
+                logger.info("Event: "+ event.kind() + " count: "+event.count()+ " context: " +
+                        event.context() +  " Context type: " + ((Path) event.context()).getClass());
 
                 //the context is always a Path.
                 final Path changed = (Path) event.context();
@@ -74,7 +98,7 @@ public class WatchServiceRecursive {
                 //do something useful here
                 if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
                     //this is not a complete path
-                    Path path = (Path) event.context(); //name des Fils
+                    Path path = (Path) event.context(); //name des Files
 
                     //need to get parent path
                     Path parentPath = keyPathMap.get(wk); // pfad des directory in dem der File ist
@@ -87,7 +111,6 @@ public class WatchServiceRecursive {
                         MinIO.setDataToUpdate(path.toString(), changed.toString(), fileDirectory, rootPath.toString());
                     }else if (Files.isDirectory(path)) { // Directory
                         registerDir(path, watchService);
-                        System.out.println("print: "+Files.isDirectory(path) +" "+ changed.toString() +" "+fileDirectory + " "+ rootPath.toString() );
                         MinIO.setDirectoryToUpdate(path.toString(), changed.toString(), fileDirectory, rootPath.toString());
                     }
                 }
