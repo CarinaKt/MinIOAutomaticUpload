@@ -81,7 +81,7 @@ public class WatchServiceRecursive {
         // TODO: lade vorhandenes in die Cloud
 
         WatchKey key = path.register(watchService,
-                StandardWatchEventKinds.ENTRY_CREATE);
+                StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
         keyPathMap.put(key, path);
 
 
@@ -99,6 +99,7 @@ public class WatchServiceRecursive {
 
                 //the context is always a Path.
                 final Path changed = (Path) event.context();
+                //event.equals()
                 String fileDirectory = rootPath.getFileName().toString();
 
                 //do something useful here
@@ -121,6 +122,22 @@ public class WatchServiceRecursive {
                     }else if (Files.isDirectory(path)) { // Directory
                         registerDir(path, watchService);
                         MinIO.setDirectoryToUpdate(path.toString(), changed.toString(), fileDirectory, rootPath.toString());
+                    }
+                }
+                if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE && !removeFromLocal){
+
+                    //this is not a complete path
+                    Path path = (Path) event.context(); //name des Files
+
+                    //need to get parent path
+                    Path parentPath = keyPathMap.get(wk); // pfad des directory in dem der File ist
+
+                    //get complete path
+                    path = parentPath.resolve(path);
+
+                    if (!Files.isDirectory(path)) { // File
+                        // remove from cloud
+                        MinIO.setDataToDelete(path.toString(), changed.toString(), fileDirectory, rootPath.toString());
                     }
                 }
             }
