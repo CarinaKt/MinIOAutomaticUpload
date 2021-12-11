@@ -47,6 +47,8 @@ public class MinIO {
 
 
     /**
+     * defines the directory to upload
+     * Format:
      *
      * @param path          = "C:/Users/name/Documents/NewDirectory" - path for the cloud
      * @param directoryName = "NewDirectory"
@@ -83,8 +85,6 @@ public class MinIO {
 
     /**
      * creates a new bucked if needed, and uploads the given File
-     * <p>
-     * TODO: Errorhandler
      *
      * @throws IOException
      * @throws ServerException
