@@ -1,8 +1,5 @@
-import io.minio.MinioClient;
-
 import javax.swing.*;
 import java.awt.event.*;
-import java.io.IOException;
 
 public class ErrorDialog extends JDialog {
     private JPanel contentPane;
@@ -45,30 +42,25 @@ public class ErrorDialog extends JDialog {
     }
 
     private void onRetry() {
-        // add your code here
-        try {
-            MinioClient minioClient = MinIO.connection();
-        } catch (IOException e) {
-            ErrorDialog.showError();
-            e.printStackTrace();
-        }
+        MinIO.setRetry(true);
         dispose();
     }
 
     private void onCancel() {
-        // add your code here if necessary
+        MinIO.setRetry(false);
         dispose();
     }
 
-    private void setMessage() {
-        // add your code here if necessary
-        message.setText("Cant connect to the Cloud");
+    private void setMessage(String inputMessage) {
+        // add the error message to the dialog
+        message.setText(inputMessage);
         dispose();
     }
 
-    public static void showError() {
+    public static void showError(String message) {
         ErrorDialog dialog = new ErrorDialog();
-        dialog.setMessage();
+        dialog.setAlwaysOnTop(true);
+        dialog.setMessage(message);
         dialog.pack();
         dialog.setVisible(true);
     }

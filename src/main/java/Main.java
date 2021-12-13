@@ -5,17 +5,12 @@ import java.io.IOException;
 
 
 public class Main {
-    public static void main(String[] args)  {
+    public static void main(String[] args) throws IOException {
 
         // Input Dialog
         DialogWithRadiobutton.loadDialog();
         // Connection to your MinIo Server
-        try {
-            MinioClient minioClient = MinIO.connection();
-        } catch (IOException e) {
-            ErrorDialog.showError();
-            e.printStackTrace();
-        }
+        MinIO.connection();
         // watch for changes
         new WatchServiceRecursive().watcher();
 

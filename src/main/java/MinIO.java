@@ -4,10 +4,20 @@ import java.io.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
+import java.util.logging.Logger;
 
 public class MinIO {
+    // Logging
+    static Logger logger = Logger.getLogger(MinIO.class.getName());
 
     private static MinioClient minioClient;
+
+    private static Boolean retry = true;
+
+    public static void setRetry(boolean value){
+        retry = value;
+    }
+
 
     /**
      * Establishes the Server connection to the Cloud
@@ -35,13 +45,12 @@ public class MinIO {
      * @param fileName   = "ordner/test.txt"
      * @param bucketName = "mytest"
      */
-    public static void setDataToUpdate(String path, String fileName, String bucketName, String rootPath)
-            throws IOException, ErrorResponseException, InsufficientDataException, InternalException,
-            InvalidResponseException, NoSuchAlgorithmException, XmlParserException, ServerException, InvalidKeyException {
+    public static void setDataToUpdate(String path, String fileName, String bucketName, String rootPath) {
         // formats fileName from, "ordner\datei.txt" to "ordner/"
-        fileName = path.substring(rootPath.length()+1);
+        fileName = path.substring(rootPath.length() + 1);
         fileName = fileName.replace("\\", "/");
 
+        setRetry(true);
         uploadFiles(path, fileName, bucketName.toLowerCase());
     }
 
@@ -55,13 +64,12 @@ public class MinIO {
      * @param bucketName    = "Documents"
      * @param rootPath      = "C:\Users\name\documents\test" - local path
      */
-    public static void setDirectoryToUpdate(String path, String directoryName, String bucketName, String rootPath)
-            throws IOException, ErrorResponseException, InsufficientDataException, InternalException,
-            InvalidResponseException, NoSuchAlgorithmException, XmlParserException, ServerException, InvalidKeyException {
+    public static void setDirectoryToUpdate(String path, String directoryName, String bucketName, String rootPath) {
         // formats directoryName from "ordner\datei.txt" to "ordner/"
-        directoryName = path.substring(rootPath.length()+1);
+        directoryName = path.substring(rootPath.length() + 1);
         directoryName = directoryName.replace("\\", "/");
 
+        setRetry(true);
         uploadDirectory(bucketName.toLowerCase(), directoryName);
     }
 
@@ -73,55 +81,49 @@ public class MinIO {
      * @param fileName   = "ordner/test.txt"
      * @param bucketName = "mytest"
      */
-    public static void setDataToDelete(String path, String fileName, String bucketName, String rootPath)
-            throws IOException, ErrorResponseException, InsufficientDataException, InternalException,
-            InvalidResponseException, NoSuchAlgorithmException, XmlParserException, ServerException, InvalidKeyException {
+    public static void setDataToDelete(String path, String fileName, String bucketName, String rootPath) {
         // formats fileName from, "ordner\datei.txt" to "ordner/"
-        fileName = path.substring(rootPath.length()+1);
+        fileName = path.substring(rootPath.length() + 1);
         fileName = fileName.replace("\\", "/");
 
-        deleteFile( fileName, bucketName.toLowerCase());
+        setRetry(true);
+        deleteFile(fileName, bucketName.toLowerCase());
     }
 
     /**
      * creates a new bucked if needed, and uploads the given File
-     *
-     * @throws IOException
-     * @throws ServerException
-     * @throws InsufficientDataException
-     * @throws InternalException
-     * @throws InvalidResponseException
-     * @throws InvalidKeyException
-     * @throws NoSuchAlgorithmException
-     * @throws XmlParserException
-     * @throws ErrorResponseException
      */
-    private static void uploadFiles(String file, String fileName, String bucketName)
-            throws IOException, ServerException, InsufficientDataException, InternalException, InvalidResponseException,
-            InvalidKeyException, NoSuchAlgorithmException, XmlParserException, ErrorResponseException {
-
+    private static void uploadFiles(String file, String fileName, String bucketName) {
         // Check if the bucket already exists
-        boolean found =
-                minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
-        if (!found) {
-            // Create a new bucket
-            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+        logger.info("bucket: " + bucketName + " " + fileName + " " + file);
+        //retry = true;
+        while (retry) {
+            boolean found = false;
+            try {
+                found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+                if (!found) {
+                    // Create a new bucket
+                    minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
 
-        } else {
-            System.out.println("Bucket '" + bucketName + "' already exists.");
+                } else {
+                    System.out.println("Bucket '" + bucketName + "' already exists.");
+                }
+                minioClient.uploadObject(
+                        UploadObjectArgs.builder()
+                                .bucket(bucketName)
+                                // take the last part behind / as name folder/document
+                                .object(fileName)
+                                // file to upload
+                                .filename(file)
+                                .build());
+                logger.info("Successfully uploaded to bucket.");
+                break;
+
+            } catch (InvalidKeyException | NoSuchAlgorithmException | InvalidResponseException | ErrorResponseException | ServerException | InsufficientDataException | XmlParserException | InternalException | IOException e) {
+                logger.warning("Error: " + e);
+                ErrorDialog.showError(e.getMessage());
+            }
         }
-
-        minioClient.uploadObject(
-                UploadObjectArgs.builder()
-                        .bucket(bucketName)
-                        // take the last part behind / as name ordenr/document
-                        .object(fileName)
-                        // file to upload
-                        .filename(file)
-                        .build());
-        System.out.println("bucket: " + bucketName + " " + fileName + " "+ file);
-        System.out.println(
-                "Successfully uploaded to bucket.");
     }
 
 
@@ -130,39 +132,34 @@ public class MinIO {
      *
      * @param bucketName
      * @param directoryName
-     * @throws IOException
-     * @throws InvalidKeyException
-     * @throws InvalidResponseException
-     * @throws InsufficientDataException
-     * @throws NoSuchAlgorithmException
-     * @throws ServerException
-     * @throws InternalException
-     * @throws XmlParserException
-     * @throws ErrorResponseException
      */
-    private static void uploadDirectory(String bucketName, String directoryName)
-            throws IOException, InvalidKeyException, InvalidResponseException, InsufficientDataException,
-            NoSuchAlgorithmException, ServerException, InternalException, XmlParserException,
-            ErrorResponseException {
+    private static void uploadDirectory(String bucketName, String directoryName) {
+        // retry = true;
+        while (retry) {
+            try {
+                boolean found =
+                        minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
 
-        boolean found =
-                minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+                if (!found) {
+                    // Create a new bucket
+                    minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
 
-        if (!found) {
-            // Create a new bucket
-            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+                } else {
+                    System.out.println("Bucket '" + bucketName + "' already exists.1");
+                }
 
-        } else {
-            System.out.println("Bucket '" + bucketName + "' already exists.1");
+                // Create object ends with '/' (also called as folder or directory).
+                minioClient.putObject(
+                        PutObjectArgs.builder().bucket(bucketName).object(directoryName + "/").stream(
+                                new ByteArrayInputStream(new byte[]{}), 0, -1)
+                                .build());
+
+                System.out.println("Successfully added directory");
+            } catch (InvalidKeyException | NoSuchAlgorithmException | ErrorResponseException | InvalidResponseException | ServerException | InsufficientDataException | XmlParserException | InternalException | IOException e) {
+                logger.warning("Error: " + e);
+                ErrorDialog.showError(e.getMessage());
+            }
         }
-
-        // Create object ends with '/' (also called as folder or directory).
-        minioClient.putObject(
-                PutObjectArgs.builder().bucket(bucketName).object(directoryName + "/").stream(
-                        new ByteArrayInputStream(new byte[]{}), 0, -1)
-                        .build());
-
-        System.out.println("Successfully added directory");
     }
 
 
@@ -172,34 +169,31 @@ public class MinIO {
      *
      * @param fileName
      * @param bucketName
-     * @throws IOException
-     * @throws InvalidKeyException
-     * @throws InvalidResponseException
-     * @throws InsufficientDataException
-     * @throws NoSuchAlgorithmException
-     * @throws ServerException
-     * @throws InternalException
-     * @throws XmlParserException
-     * @throws ErrorResponseException
      */
-   private static void deleteFile(String fileName, String bucketName)
-           throws IOException, InvalidKeyException, InvalidResponseException, InsufficientDataException,
-           NoSuchAlgorithmException, ServerException, InternalException, XmlParserException, ErrorResponseException {
-       boolean found =
-               minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+    private static void deleteFile(String fileName, String bucketName) {
+        //retry = true;
+        while (retry) {
+            try {
 
-       if(found){
-           minioClient.removeObject(
-               RemoveObjectArgs.builder()
-                   .bucket(bucketName)
-                   .object(fileName)
-                   .build());
+                boolean found =
+                        minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
 
-           System.out.println("Removed file: " + fileName + " from Cloud.");
-       }else {
-           System.out.println("File: " + fileName + " not in Cloud.");
-       }
-   }
+                if (found) {
+                    minioClient.removeObject(
+                            RemoveObjectArgs.builder()
+                                    .bucket(bucketName)
+                                    .object(fileName)
+                                    .build());
+
+                    System.out.println("Removed file: " + fileName + " from Cloud.");
+                } else {
+                    System.out.println("File: " + fileName + " not in Cloud.");
+                }
+            } catch (InvalidKeyException | NoSuchAlgorithmException | ErrorResponseException | InvalidResponseException | ServerException | InsufficientDataException | XmlParserException | InternalException | IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 }
 
