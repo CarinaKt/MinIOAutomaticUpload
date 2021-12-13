@@ -84,7 +84,6 @@ public class DialogWithRadiobutton extends JDialog {
                     System.out.println(directory);
                     myWriter.write("path=" + directory + "\n");
                     myWriter.write("removeExportedData=" + removeFromLocalRadioButton.isSelected() + "\n");
-                    myWriter.write("uploadExistingData=" + uploadToTheCloudRadioButton.isSelected() + "\n");
                     myWriter.close();
 
                 } else {
@@ -97,16 +96,19 @@ public class DialogWithRadiobutton extends JDialog {
 
         }else {
             logger.warning("no existing folder");
-            // TODO: Ask to create the Folder/ change the entry
+            DialogWithRadiobutton.loadDialog();
+
         }
 
         dispose();
+        new WatchServiceRecursive().watcher();
     }
 
     private void onCancel() {
         // add your code here if necessary
         dispose();
         logger.info("Close Dialog");
+        System.exit(0);
     }
 
     public static void loadDialog() {
@@ -114,12 +116,15 @@ public class DialogWithRadiobutton extends JDialog {
         Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"),"\\AppData\\MinIO\\uploadConfig.ini");
         if (!Files.exists(path)) {
             DialogWithRadiobutton myDialog = new DialogWithRadiobutton();
+            myDialog.setModalityType(ModalityType.APPLICATION_MODAL);
+            myDialog.setAlwaysOnTop(true);
             myDialog.createUIComponents();
             myDialog.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
             myDialog.pack();
             myDialog.setVisible(true);
         } else {
             Logger.getAnonymousLogger().info("File already exists: " + path);
+            new WatchServiceRecursive().watcher();
         }
     }
 
@@ -131,10 +136,6 @@ public class DialogWithRadiobutton extends JDialog {
         // Radiobutton "exported Data"
         removeFromLocalRadioButton.setSelected(true);
         keepLocalTooRadioButton.setSelected(false);
-
-        // Radiobutton "existing Data"
-        nothingRadioButton.setSelected(true);
-        uploadToTheCloudRadioButton.setSelected(false);
 
         // Listener make sure that only one Radiobutton can be selected
         removeFromLocalRadioButton.addActionListener(new ActionListener() {
@@ -162,30 +163,6 @@ public class DialogWithRadiobutton extends JDialog {
             }
         });
 
-        uploadToTheCloudRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if(uploadToTheCloudRadioButton.isSelected()){
-                    nothingRadioButton.setSelected(false);
-                }else{
-                    nothingRadioButton.setSelected(true);
-                }
-                logger.info("uploadToTheCloudRadioButton.isSelected(): " + uploadToTheCloudRadioButton.isSelected()
-                        + "\n" + "nothingRadioButton: " + nothingRadioButton.isSelected());
-            }
-        });
-        nothingRadioButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (nothingRadioButton.isSelected()) {
-                    uploadToTheCloudRadioButton.setSelected(false);
-                } else {
-                    uploadToTheCloudRadioButton.setSelected(true);
-                }
-                logger.info("nothingRadioButton.isSelected(): " + nothingRadioButton.isSelected()
-                        + "\n" + "uploadToTheCloudRadioButton: " + uploadToTheCloudRadioButton.isSelected());
-            }
-        });
 
     }
 

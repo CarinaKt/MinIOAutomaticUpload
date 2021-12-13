@@ -1,5 +1,4 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.*;
@@ -13,7 +12,6 @@ public class WatchServiceRecursive {
     // Logging
     Logger logger =  Logger.getLogger(this.getClass().getName());
     private static Map<WatchKey, Path> keyPathMap = new HashMap<>();
-
 
     /**
      * Reads in the Directory Path from the .ini file in
@@ -35,12 +33,8 @@ public class WatchServiceRecursive {
             propertyValue = prop.getProperty(key);
             logger.info("read property Value: " + propertyValue + " from key: " + key);
 
-        } catch (FileNotFoundException e) {
-            logger.warning("An error occurred: " + e);
-            e.printStackTrace();
         } catch (IOException e) {
             logger.warning("An error occurred: " + e);
-            e.printStackTrace();
         }
 
         //returns directory name
@@ -52,8 +46,6 @@ public class WatchServiceRecursive {
     final String directory = getProperty("path");
     // Handel Uploaded Data
     final boolean removeFromLocal = getProperty("removeExportedData").equals("true");
-    // Handel existing Data
-    final boolean uploadExistingData = getProperty("uploadExistingData").equals("true");
 
     // the directory path to watch on
     final Path rootPath = Path.of(directory);

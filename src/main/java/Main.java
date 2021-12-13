@@ -1,6 +1,3 @@
-import com.sun.net.httpserver.Authenticator;
-import io.minio.MinioClient;
-
 import java.io.IOException;
 
 
@@ -12,8 +9,6 @@ public class Main {
         // Connection to your MinIo Server
         MinIO.connection();
         // watch for changes
-        new WatchServiceRecursive().watcher();
-
-
+        //new WatchServiceRecursive().watcher();
     }
 }
