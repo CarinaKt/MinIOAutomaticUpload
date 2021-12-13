@@ -8,7 +8,6 @@ public class Main {
         DialogWithRadiobutton.loadDialog();
         // Connection to your MinIo Server
         MinIO.connection();
-        // watch for changes
-        //new WatchServiceRecursive().watcher();
+
     }
 }
