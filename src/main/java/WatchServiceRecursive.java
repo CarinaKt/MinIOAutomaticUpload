@@ -70,7 +70,6 @@ public class WatchServiceRecursive {
         }
 
         logger.info("registering: " + path);
-        // TODO: lade vorhandenes in die Cloud
 
         WatchKey key = path.register(watchService,
                 StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);

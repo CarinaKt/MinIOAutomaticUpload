@@ -23,7 +23,7 @@ public class MinIO {
      * Establishes the Server connection to the Cloud
      *
      * @throws IOException
-     */
+     */ //muss ich den zurückgeben?
     public static MinioClient connection() throws IOException {
         Properties prop = new Properties();
         prop.load(new FileReader("config.properties"));
@@ -53,7 +53,6 @@ public class MinIO {
         setRetry(true);
         uploadFiles(path, fileName, bucketName.toLowerCase());
     }
-
 
     /**
      * defines the directory to upload
@@ -94,12 +93,12 @@ public class MinIO {
      * creates a new bucked if needed, and uploads the given File
      */
     private static void uploadFiles(String file, String fileName, String bucketName) {
-        // Check if the bucket already exists
+
         logger.info("bucket: " + bucketName + " " + fileName + " " + file);
-        //retry = true;
         while (retry) {
             boolean found = false;
             try {
+                // Check if the bucket already exists
                 found = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
                 if (!found) {
                     // Create a new bucket
@@ -126,7 +125,6 @@ public class MinIO {
         }
     }
 
-
     /**
      * Adds a Directory to a (existing) Bucket
      *
@@ -134,7 +132,6 @@ public class MinIO {
      * @param directoryName
      */
     private static void uploadDirectory(String bucketName, String directoryName) {
-        // retry = true;
         while (retry) {
             try {
                 boolean found =
@@ -145,7 +142,7 @@ public class MinIO {
                     minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
 
                 } else {
-                    System.out.println("Bucket '" + bucketName + "' already exists.1");
+                    logger.info("Bucket '" + bucketName + "' already exists.");
                 }
 
                 // Create object ends with '/' (also called as folder or directory).
@@ -154,14 +151,13 @@ public class MinIO {
                                 new ByteArrayInputStream(new byte[]{}), 0, -1)
                                 .build());
 
-                System.out.println("Successfully added directory");
+                logger.info("Successfully added directory");
             } catch (InvalidKeyException | NoSuchAlgorithmException | ErrorResponseException | InvalidResponseException | ServerException | InsufficientDataException | XmlParserException | InternalException | IOException e) {
                 logger.warning("Error: " + e);
                 ErrorDialog.showError(e.getMessage());
             }
         }
     }
-
 
     /**
      * Removes a file from the cloud after a Renaming
@@ -171,7 +167,6 @@ public class MinIO {
      * @param bucketName
      */
     private static void deleteFile(String fileName, String bucketName) {
-        //retry = true;
         while (retry) {
             try {
 
@@ -185,12 +180,12 @@ public class MinIO {
                                     .object(fileName)
                                     .build());
 
-                    System.out.println("Removed file: " + fileName + " from Cloud.");
+                    logger.info("Removed file: " + fileName + " from Cloud.");
                 } else {
-                    System.out.println("File: " + fileName + " not in Cloud.");
+                    logger.info("File: " + fileName + " not in Cloud.");
                 }
             } catch (InvalidKeyException | NoSuchAlgorithmException | ErrorResponseException | InvalidResponseException | ServerException | InsufficientDataException | XmlParserException | InternalException | IOException e) {
-                e.printStackTrace();
+                ErrorDialog.showError(e.getMessage());
             }
         }
     }
