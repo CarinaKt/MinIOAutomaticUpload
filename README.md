@@ -17,3 +17,11 @@ in case the Swing Dialog doesn't run:
 or first compile it with Gradle and then switch to IntelliJ IDEA
 
 now the swing Dialog is able to execute
+#
+
+Renamed files will be deleted in the cloud and updated with the new version. 
+Renaming a Folder is not supported.
+If you create a new Folder and rename this one you have to delete the folder "New Folder" by hand in the cloud.
+This is meant to prevent losing data by mistake.
+
+
