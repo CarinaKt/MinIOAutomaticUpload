@@ -14,8 +14,8 @@ endpoint=http://pi.minio:9000
 user=user
 password=password
 region=ap-northeast-1
-# 
-Detect changes in the Filesystem
+
+## Detect changes in the Filesystem
 WatchServiceRecursive watches for events from the filesystem:
 - Delete:
 A file has been deleted locally. If the option to keep updated data locally too is set to true, the removed file will also be removed from the cloud. If the option to keep things locally is set to false, this event will be ignored.
@@ -26,8 +26,8 @@ MinIO
 The application is able to upload files, directories, and also delete files. It is not able to delete a directory, which prevents losing data by mistake.
 
 MinIO Api documentation: https://docs.min.io/?ref=con
-# 
-Naming pattern:
+
+## Naming pattern:
 The MinIO uses the AmazonS3 Naming Patterns:
 - Bucket names must be between 3 and 63 characters long.
 - Bucket names can consist only of lowercase letters, numbers, dots (.), and hyphens (-).
@@ -45,8 +45,8 @@ For more information, see https://docs.aws.amazon.com/AmazonS3/latest/userguide/
 Objects that already existed before the application was started will not be updated by this application.
  
 Build for Windows Renamed files will be deleted in the cloud and updated with the new version (Windows 10). Attention: Windows 11 does not provide an event if a file's data changes, so it does not update anything.
-# 
- In case the Swing Dialog doesn't run: 
+
+## In case the Swing Dialog doesn't run: 
  1. download the JAR from https://repo1.maven.org/maven2/io/minio/minio/8.3.4/
  2. put it as a library into your project
  3. change in Gradle settings Build and run to: from Gradle to IntelliJ IDEA
