@@ -23,7 +23,7 @@ public class MinIO {
      * Establishes the Server connection to the Cloud
      *
      * @throws IOException
-     */ //muss ich den zurückgeben?
+     */
     public static MinioClient connection() throws IOException {
         Properties prop = new Properties();
         prop.load(new FileReader("config.properties"));
@@ -103,6 +103,7 @@ public class MinIO {
                 if (!found) {
                     // Create a new bucket
                     minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+                    System.out.println("no Bucket");
 
                 } else {
                     System.out.println("Bucket '" + bucketName + "' already exists.");
@@ -146,12 +147,15 @@ public class MinIO {
                 }
 
                 // Create object ends with '/' (also called as folder or directory).
-                minioClient.putObject(
-                        PutObjectArgs.builder().bucket(bucketName).object(directoryName + "/").stream(
-                                new ByteArrayInputStream(new byte[]{}), 0, -1)
-                                .build());
+                if(!directoryName.contains("Neuer Ordner")) {
+                    minioClient.putObject(
+                            PutObjectArgs.builder().bucket(bucketName).object(directoryName + "/").stream(
+                                    new ByteArrayInputStream(new byte[]{}), 0, -1)
+                                    .build());
 
-                logger.info("Successfully added directory");
+                    logger.info("Successfully added directory");
+                }
+                break;
             } catch (InvalidKeyException | NoSuchAlgorithmException | ErrorResponseException | InvalidResponseException | ServerException | InsufficientDataException | XmlParserException | InternalException | IOException e) {
                 logger.warning("Error: " + e);
                 ErrorDialog.showError(e.getMessage());
@@ -184,11 +188,11 @@ public class MinIO {
                 } else {
                     logger.info("File: " + fileName + " not in Cloud.");
                 }
+                break;
             } catch (InvalidKeyException | NoSuchAlgorithmException | ErrorResponseException | InvalidResponseException | ServerException | InsufficientDataException | XmlParserException | InternalException | IOException e) {
                 ErrorDialog.showError(e.getMessage());
             }
         }
     }
-
 }
 

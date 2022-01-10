@@ -31,23 +31,6 @@ class WatchServiceRecursiveTest {
         Files.createDirectory(Path.of(System.getProperty("user.home") + "/Documents/test"));
     }
 
-
-    void createDirectory(String folder) throws IOException {
-        Files.createDirectory(FileSystems.getDefault().getPath(System.getProperty("user.home") + "/Documents/test/" + folder));
-    }
-
-    void createFile(String file) throws IOException {
-        Files.createFile(Path.of(System.getProperty("user.home") + "/Documents/test/" + file));
-    }
-
-    void deleteFile(Path file) throws IOException {
-        Files.deleteIfExists(Path.of(System.getProperty("user.home") + "/Documents/test/" + file));
-    }
-
-    void deleteFolder(String folder) throws IOException {
-        Files.deleteIfExists(Path.of(System.getProperty("user.home") + "/Documents/test/" + folder));
-    }
-
     @AfterEach
     void tearDown() throws IOException {
         File file = new File(System.getProperty("user.home") + "/Documents/test");
@@ -65,14 +48,12 @@ class WatchServiceRecursiveTest {
 
     @Test
     void testFolder() throws IOException {
-        //WatchServiceRecursive w = new WatchServiceRecursive();
         Files.createDirectory(FileSystems.getDefault().getPath(System.getProperty("user.home") + "/Documents/test/hallo"));
         Assert.assertTrue(Files.exists(Path.of(System.getProperty("user.home") + "/Documents/test/hallo")));
     }
 
     @Test
     void testFile() throws IOException {
-        // WatchServiceRecursive w = new WatchServiceRecursive();
         Files.createFile(FileSystems.getDefault().getPath(System.getProperty("user.home") + "/Documents/test/hallo.txt"));
         Assert.assertTrue(Files.exists(Path.of(System.getProperty("user.home") + "/Documents/test/hallo.txt")));
     }

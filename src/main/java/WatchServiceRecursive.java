@@ -10,16 +10,17 @@ import java.util.logging.Logger;
 
 public class WatchServiceRecursive {
     // Logging
-    Logger logger =  Logger.getLogger(this.getClass().getName());
+    Logger logger = Logger.getLogger(this.getClass().getName());
     private static Map<WatchKey, Path> keyPathMap = new HashMap<>();
 
     /**
      * Reads in the Directory Path from the .ini file in
      * C:/User/Name/AppData/MinIo
+     *
      * @param key- the property to read out of the file
-     *              "path": string path of Folder to track an d upload
-     *              "removeExportedData": true/false
-     *              "uploadExistingData": true/false
+     *             "path": string path of Folder to track an d upload
+     *             "removeExportedData": true/false
+     *             "uploadExistingData": true/false
      * @return
      */
     private String getProperty(String key) {
@@ -27,7 +28,7 @@ public class WatchServiceRecursive {
         Properties prop = new Properties();
 
         try {
-            Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"),"\\AppData\\MinIO\\uploadConfig.ini");
+            Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"), "\\AppData\\MinIO\\uploadConfig.ini");
             prop.load(new FileReader(path.toString()));
 
             propertyValue = prop.getProperty(key);
@@ -51,19 +52,17 @@ public class WatchServiceRecursive {
     final Path rootPath = Path.of(directory);
 
 
-
-    public void watcher () {
+    public void watcher() {
 
         try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
             registerDir(rootPath, watchService);
             startListening(watchService);
-        } catch (Exception e) { // registerDir(rootPath, watchService);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void registerDir (Path path, WatchService watchService) throws
-            IOException {
+    private void registerDir(Path path, WatchService watchService) throws IOException {
 
         if (!Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS)) {
             return;
@@ -81,19 +80,17 @@ public class WatchServiceRecursive {
         }
     }
 
-    private void startListening (WatchService watchService) throws Exception {
+    private void startListening(WatchService watchService) throws Exception {
         while (true) {
             WatchKey wk = watchService.take();
             for (WatchEvent<?> event : wk.pollEvents()) {
-                logger.info("Event: "+ event.kind() + " count: "+event.count()+ " context: " +
-                        event.context() +  " Context type: " + ((Path) event.context()).getClass());
+                logger.info("Event: " + event.kind() + " count: " + event.count() + " context: " +
+                        event.context() + " Context type: " + ((Path) event.context()).getClass());
 
                 //the context is always a Path.
                 final Path changed = (Path) event.context();
-                //event.equals()
                 String fileDirectory = rootPath.getFileName().toString();
 
-                //do something useful here
                 if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
                     //this is not a complete path
                     Path path = (Path) event.context(); //name des Files
@@ -105,37 +102,41 @@ public class WatchServiceRecursive {
                     path = parentPath.resolve(path);
 
 
-                    if(!Files.isDirectory(path)) { // File
+                    if (!Files.isDirectory(path)) { // File
                         MinIO.setDataToUpdate(path.toString(), changed.toString(), fileDirectory, rootPath.toString());
-                        if(removeFromLocal){
+                        if (removeFromLocal) {
                             deleteLocal(path);
                         }
-                    }else if (Files.isDirectory(path)) { // Directory
+                    } else if (Files.isDirectory(path)) { // Directory
                         registerDir(path, watchService);
                         MinIO.setDirectoryToUpdate(path.toString(), changed.toString(), fileDirectory, rootPath.toString());
                     }
                 }
-                if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE && !removeFromLocal){
+                // a deleted Directory/ Renamed rove from cloud only if the option remove from local
+                // after upload is selected
+                if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE && !removeFromLocal) {
 
                     //this is not a complete path
-                    Path path = (Path) event.context(); //name des Files
+                    Path path = (Path) event.context(); //name of files
 
                     //need to get parent path
-                    Path parentPath = keyPathMap.get(wk); // pfad des directory in dem der File ist
+                    Path parentPath = keyPathMap.get(wk); // path of directory where the file is stored
 
                     //get complete path
                     path = parentPath.resolve(path);
 
+                    // remove only files not Directory
                     if (!Files.isDirectory(path)) { // File
                         // remove from cloud
                         MinIO.setDataToDelete(path.toString(), changed.toString(), fileDirectory, rootPath.toString());
                     }
                 }
+
             }
-            if(!wk.reset()){
+            if (!wk.reset()) {
                 keyPathMap.remove(wk);
             }
-            if(keyPathMap.isEmpty()){
+            if (keyPathMap.isEmpty()) {
                 break;
             }
         }
@@ -143,10 +144,11 @@ public class WatchServiceRecursive {
 
     /**
      * Removes the given path from the local Filesystem
+     *
      * @param path
      */
-    private void deleteLocal(Path path){
-        if(Files.exists(path)) {
+    private void deleteLocal(Path path) {
+        if (Files.exists(path)) {
             File f = new File(path.toString());
             f.delete();
             logger.info("delete from local: " + path);

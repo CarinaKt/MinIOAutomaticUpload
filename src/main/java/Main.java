@@ -3,11 +3,10 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws IOException {
-
+        // Connection to your MinIO Server
+        MinIO.connection();
         // Input Dialog
         DialogWithRadiobutton.loadDialog();
-        // Connection to your MinIo Server
-        MinIO.connection();
 
     }
 }
