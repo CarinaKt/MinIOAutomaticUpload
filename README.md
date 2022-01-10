@@ -1,4 +1,4 @@
-#MinIOAutomaticUpload
+# MinIOAutomaticUpload
 This application uploads changed data from a given source to your MinIO Cloud automatically.
 
 To see how to install MinIO on a Raspberry Pi visit
