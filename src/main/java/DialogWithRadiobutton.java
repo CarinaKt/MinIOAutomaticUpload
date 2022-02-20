@@ -1,8 +1,5 @@
 import javax.swing.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,7 +20,7 @@ public class DialogWithRadiobutton extends JDialog {
 
     // Logging
     Logger logger =  Logger.getLogger(this.getClass().getName());
-    Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"),"\\AppData\\MinIO");
+    //Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"),"\\AppData\\MinIO");
 
     public DialogWithRadiobutton() {
         setContentPane(DialogWithButton);
@@ -64,44 +61,18 @@ public class DialogWithRadiobutton extends JDialog {
     private void onOK() {
         // prof the path
         String directory = sourceFolderPathTextField.getText();
+
         if(Files.isDirectory(Path.of(directory))){
            logger.info("Directory exists!");
-
-            try {
-
-                if (!Files.exists(path)) {
-                    Files.createDirectory(path);
-                    System.out.println("Directory created");
-                    logger.info("Directory created" + path);
-                }
-
-                File myObj = new File( path.toString()+"\\uploadConfig.ini");
-                if (myObj.createNewFile()) {
-                    logger.info("File created: " + myObj.getName());
-
-                    FileWriter myWriter = new FileWriter(myObj);
-                    directory = directory.replace("\\", "\\\\");
-                    System.out.println(directory);
-                    myWriter.write("path=" + directory + "\n");
-                    myWriter.write("removeExportedData=" + removeFromLocalRadioButton.isSelected() + "\n");
-                    myWriter.close();
-
-                } else {
-                    logger.info("File already exists.");
-                }
-            } catch (IOException e) {
-                logger.warning("An error occurred." + e);
-                e.printStackTrace();
-            }
+            SaveConfigurations.setProperty(directory, removeFromLocalRadioButton.isSelected());
 
         }else {
             logger.warning("no existing folder");
             DialogWithRadiobutton.loadDialog();
-
         }
 
         dispose();
-        new WatchServiceRecursive().watcher();
+        // new WatchServiceRecursive().watcher();
     }
 
     private void onCancel() {
@@ -124,7 +95,7 @@ public class DialogWithRadiobutton extends JDialog {
             myDialog.setVisible(true);
         } else {
             Logger.getAnonymousLogger().info("File already exists: " + path);
-            new WatchServiceRecursive().watcher();
+            //TODO new WatchServiceRecursive().watcher();
         }
     }
 

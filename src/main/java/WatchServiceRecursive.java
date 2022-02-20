@@ -1,19 +1,17 @@
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 
 public class WatchServiceRecursive {
     // Logging
     Logger logger = Logger.getLogger(this.getClass().getName());
-    private static Map<WatchKey, Path> keyPathMap = new HashMap<>();
+    private Map<WatchKey, Path> keyPathMap = new HashMap<>();
 
-    /**
+  /*  *//**
      * Reads in the Directory Path from the .ini file in
      * C:/User/Name/AppData/MinIo
      *
@@ -22,7 +20,7 @@ public class WatchServiceRecursive {
      *             "removeExportedData": true/false
      *             "uploadExistingData": true/false
      * @return
-     */
+     *//*
     private String getProperty(String key) {
         String propertyValue = "";
         Properties prop = new Properties();
@@ -41,15 +39,34 @@ public class WatchServiceRecursive {
         //returns directory name
         return propertyValue;
     }
+*/
+
+    // Directory to trac
+    //final String directory = SaveConfigurations.getProperty("path");
+    // Handel Uploaded Data
+    //final boolean removeFromLocal = SaveConfigurations.getProperty("removeExportedData").equals("true");
+
+    // the directory path to watch on
+    //final Path rootPath = Path.of(directory);
 
 
     // Directory to trac
-    final String directory = getProperty("path");
+    String directory;
     // Handel Uploaded Data
-    final boolean removeFromLocal = getProperty("removeExportedData").equals("true");
+    boolean removeFromLocal;
 
     // the directory path to watch on
-    final Path rootPath = Path.of(directory);
+    Path rootPath;
+
+    public void start(){
+        directory = SaveConfigurations.getProperty("path");
+        removeFromLocal = SaveConfigurations.getProperty("removeExportedData").equals("true");
+        rootPath = Path.of(directory);
+        watcher();
+    }
+
+
+
 
 
     public void watcher() {
