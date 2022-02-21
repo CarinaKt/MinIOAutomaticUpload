@@ -19,7 +19,7 @@ public class DialogWithRadiobutton extends JDialog {
     private JPanel AdditionalOptions;
 
     // Logging
-    Logger logger =  Logger.getLogger(this.getClass().getName());
+    Logger logger = Logger.getLogger(this.getClass().getName());
     //Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"),"\\AppData\\MinIO");
 
     public DialogWithRadiobutton() {
@@ -62,17 +62,16 @@ public class DialogWithRadiobutton extends JDialog {
         // prof the path
         String directory = sourceFolderPathTextField.getText();
 
-        if(Files.isDirectory(Path.of(directory))){
-           logger.info("Directory exists!");
+        if (Files.isDirectory(Path.of(directory))) {
+            logger.info("Directory exists!");
             SaveConfigurations.setProperty(directory, removeFromLocalRadioButton.isSelected());
 
-        }else {
+        } else {
             logger.warning("no existing folder");
             DialogWithRadiobutton.loadDialog();
         }
 
         dispose();
-        // new WatchServiceRecursive().watcher();
     }
 
     private void onCancel() {
@@ -84,7 +83,7 @@ public class DialogWithRadiobutton extends JDialog {
 
     public static void loadDialog() {
         // Only Open if ini.txt doesnt exists
-        Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"),"\\AppData\\MinIO\\uploadConfig.ini");
+        Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"), "\\AppData\\MinIO\\uploadConfig.ini");
         if (!Files.exists(path)) {
             DialogWithRadiobutton myDialog = new DialogWithRadiobutton();
             myDialog.setModalityType(ModalityType.APPLICATION_MODAL);
@@ -95,7 +94,6 @@ public class DialogWithRadiobutton extends JDialog {
             myDialog.setVisible(true);
         } else {
             Logger.getAnonymousLogger().info("File already exists: " + path);
-            //TODO new WatchServiceRecursive().watcher();
         }
     }
 
@@ -110,23 +108,23 @@ public class DialogWithRadiobutton extends JDialog {
 
         // Listener make sure that only one Radiobutton can be selected
         removeFromLocalRadioButton.addActionListener(new ActionListener() {
-             @Override
-             public void actionPerformed(ActionEvent e) {
-                 if(removeFromLocalRadioButton.isSelected()){
-                     keepLocalTooRadioButton.setSelected(false);
-                 }else{
-                     keepLocalTooRadioButton.setSelected(true);
-                 }
-                 logger.info("removeFromLocalRadioButton.isSelected(): " + removeFromLocalRadioButton.isSelected()
-                         + "\n" + "keepLocalTooRadioButton: " + keepLocalTooRadioButton.isSelected());
-             }
-         });
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (removeFromLocalRadioButton.isSelected()) {
+                    keepLocalTooRadioButton.setSelected(false);
+                } else {
+                    keepLocalTooRadioButton.setSelected(true);
+                }
+                logger.info("removeFromLocalRadioButton.isSelected(): " + removeFromLocalRadioButton.isSelected()
+                        + "\n" + "keepLocalTooRadioButton: " + keepLocalTooRadioButton.isSelected());
+            }
+        });
         keepLocalTooRadioButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(keepLocalTooRadioButton.isSelected()){
+                if (keepLocalTooRadioButton.isSelected()) {
                     removeFromLocalRadioButton.setSelected(false);
-                }else{
+                } else {
                     removeFromLocalRadioButton.setSelected(true);
                 }
                 logger.info("keepLocalTooRadioButton.isSelected(): " + keepLocalTooRadioButton.isSelected()

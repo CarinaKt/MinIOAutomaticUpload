@@ -6,7 +6,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
-import java.util.concurrent.Semaphore;
 import java.util.logging.Logger;
 
 public class SaveConfigurations {
@@ -14,31 +13,31 @@ public class SaveConfigurations {
     // Logging
     static Logger logger = Logger.getLogger("SaveConfigurations");
 
-    private static final Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"), "\\AppData\\MinIO\\uploadConfig.ini");
-    private static final Path sourcePath = FileSystems.getDefault().getPath(System.getProperty("user.home"), "\\AppData\\MinIO");
+    private static final Path path =
+            FileSystems.getDefault().getPath(System.getProperty("user.home"), "\\AppData\\MinIO\\uploadConfig.ini");
+    private static final Path sourcePath =
+            FileSystems.getDefault().getPath(System.getProperty("user.home"), "\\AppData\\MinIO");
 
-    private static final int MAX_AVAILABLE = 1;
-    static final Semaphore available = new Semaphore(MAX_AVAILABLE, true);
 
     /**
      * Reads in the Directory Path from the .ini file in
      * C:/User/Name/AppData/MinIo
      *
      * @param key- the property to read out of the file
-     *             "path": string path of Folder to track an d upload
+     *             "path": string path of Folder to track and upload
      *             "removeExportedData": true/false
-     *             "uploadExistingData": true/false
-     * @return
+     * @return the Value to the key found in the .ini File
      */
-    public static synchronized String getProperty(String key) {
+    public static String getProperty(String key) throws InterruptedException {
 
         String propertyValue = "";
         Properties prop = new Properties();
 
-            System.out.println("true");
+        synchronized (SaveConfigurations.class) {
+            while (!sourcePath.toFile().exists()) {
+                SaveConfigurations.class.wait();
+            }
             try {
-                available.acquire();
-
                 try {
                     Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"), "\\AppData\\MinIO\\uploadConfig.ini");
                     prop.load(new FileReader(path.toString()));
@@ -46,30 +45,35 @@ public class SaveConfigurations {
                     propertyValue = prop.getProperty(key);
                     logger.info("read property Value: " + propertyValue + " from key: " + key);
 
+
                 } catch (IOException e) {
                     logger.warning("An error occurred: " + e);
                 }
 
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
+            }
         }
-
-        available.release();
-
         //returns directory name
         return propertyValue;
-
     }
 
+
+    /**
+     * Puts the given information from the Dialog into the configuration.ini File
+     * C:/User/Name/AppData/MinIo
+     *
+     * @param directory- the path of the Folder to track and upload
+     * @param selected-  "removeExportedData": true/false
+     */
     public static void setProperty(String directory, boolean selected) {
-        try {
-            available.acquire();
+
+        synchronized (SaveConfigurations.class) {
 
             try {
 
                 if (!Files.exists(path)) {
                     Files.createDirectory(sourcePath);
-                    System.out.println("Directory created");
                     logger.info("Directory created" + path);
                 }
 
@@ -79,7 +83,6 @@ public class SaveConfigurations {
 
                     FileWriter myWriter = new FileWriter(myObj);
                     directory = directory.replace("\\", "\\\\");
-                    System.out.println(directory);
                     myWriter.write("path=" + directory + "\n");
                     myWriter.write("removeExportedData=" + selected + "\n");
                     myWriter.close();
@@ -92,11 +95,8 @@ public class SaveConfigurations {
                 e.printStackTrace();
             }
 
-
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            SaveConfigurations.class.notify();
         }
-        available.release();
     }
 }
 
