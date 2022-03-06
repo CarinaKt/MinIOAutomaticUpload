@@ -64,10 +64,10 @@ public class WatchServiceRecursive {
 
                 if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
                     //this is not a complete path
-                    Path path = (Path) event.context(); //name des Files
+                    Path path = (Path) event.context(); //name of file
 
                     //need to get parent path
-                    Path parentPath = keyPathMap.get(wk); // pfad des directory in dem der File ist
+                    Path parentPath = keyPathMap.get(wk); //path of directory where the file is located
 
                     //get complete path
                     path = parentPath.resolve(path);
@@ -124,5 +124,6 @@ public class WatchServiceRecursive {
             f.delete();
             logger.info("delete from local: " + path);
         }
+
     }
 }
