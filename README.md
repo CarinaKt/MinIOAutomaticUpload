@@ -1,5 +1,8 @@
 # MinIOAutomaticUpload
 This application uploads changed data from a given source to your MinIO Cloud automatically.
+The application is able to upload files, directories, and also delete files. It is not able to delete a directory, 
+which prevents losing data by mistake. <br>
+MinIO Api documentation: https://docs.min.io/?ref=con
 
 To see how to install MinIO on a Raspberry Pi visit
 https://www.linkedin.com/pulse/build-your-own-private-cloud-home-raspberry-pi-minio-huerta-arias
@@ -10,10 +13,10 @@ To modify the upload behavior, modify this file.
 
 Connect to the cloud by entering the endpoint, user, password, and region in a file named “config.properties”, as shown below:
 
-endpoint=http://pi.minio:9000
-user=user
-password=password
-region=ap-northeast-1
+endpoint=http://pi.minio:9000 <br>
+user=user <br>
+password=password <br>
+region=ap-northeast-1 <br>
 
 ## Detect changes in the Filesystem
 WatchServiceRecursive watches for events from the filesystem:
@@ -21,14 +24,9 @@ WatchServiceRecursive watches for events from the filesystem:
 A file has been deleted locally. If the option to keep updated data locally too is set to true, the removed file will also be removed from the cloud. If the option to keep things locally is set to false, this event will be ignored.
 - Create:
 As a result of this event, a new directory or file has been created or renamed. As a result, the object connected to this event gets updated in the cloud.
- 
-MinIO
-The application is able to upload files, directories, and also delete files. It is not able to delete a directory, which prevents losing data by mistake.
-
-MinIO Api documentation: https://docs.min.io/?ref=con
 
 ## Naming pattern:
-The MinIO uses the AmazonS3 Naming Patterns:
+The MinIO uses the Amazon S3 Naming Patterns:
 - Bucket names must be between 3 and 63 characters long.
 - Bucket names can consist only of lowercase letters, numbers, dots (.), and hyphens (-).
 - Bucket names must begin and end with a letter or number.
@@ -52,5 +50,5 @@ Build for Windows Renamed files will be deleted in the cloud and updated with th
  3. change in Gradle settings Build and run to: from Gradle to IntelliJ IDEA
  
  or first, compile it with Gradle and then switch to IntelliJ IDEA.
- Now the swing Dialog can execute.
+ Now the swing Dialog can be executed.
 

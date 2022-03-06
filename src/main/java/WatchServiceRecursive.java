@@ -1,58 +1,29 @@
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Logger;
 
 
 public class WatchServiceRecursive {
     // Logging
     Logger logger = Logger.getLogger(this.getClass().getName());
-    private static Map<WatchKey, Path> keyPathMap = new HashMap<>();
-
-    /**
-     * Reads in the Directory Path from the .ini file in
-     * C:/User/Name/AppData/MinIo
-     *
-     * @param key- the property to read out of the file
-     *             "path": string path of Folder to track an d upload
-     *             "removeExportedData": true/false
-     *             "uploadExistingData": true/false
-     * @return
-     */
-    private String getProperty(String key) {
-        String propertyValue = "";
-        Properties prop = new Properties();
-
-        try {
-            Path path = FileSystems.getDefault().getPath(System.getProperty("user.home"), "\\AppData\\MinIO\\uploadConfig.ini");
-            prop.load(new FileReader(path.toString()));
-
-            propertyValue = prop.getProperty(key);
-            logger.info("read property Value: " + propertyValue + " from key: " + key);
-
-        } catch (IOException e) {
-            logger.warning("An error occurred: " + e);
-        }
-
-        //returns directory name
-        return propertyValue;
-    }
+    private Map<WatchKey, Path> keyPathMap = new HashMap<>();
 
 
     // Directory to trac
-    final String directory = getProperty("path");
+    String directory;
     // Handel Uploaded Data
-    final boolean removeFromLocal = getProperty("removeExportedData").equals("true");
-
+    boolean removeFromLocal;
     // the directory path to watch on
-    final Path rootPath = Path.of(directory);
+    Path rootPath;
 
+    public void watcher() throws InterruptedException {
 
-    public void watcher() {
+        directory = SaveConfigurations.getProperty("path");
+        removeFromLocal = SaveConfigurations.getProperty("removeExportedData").equals("true");
+        rootPath = Path.of(directory);
 
         try (WatchService watchService = FileSystems.getDefault().newWatchService()) {
             registerDir(rootPath, watchService);
