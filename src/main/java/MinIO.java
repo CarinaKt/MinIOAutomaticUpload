@@ -1,6 +1,8 @@
 import io.minio.*;
 import io.minio.errors.*;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
