@@ -42,7 +42,7 @@ public class WatchServiceRecursive {
         logger.info("registering: " + path);
 
         WatchKey key = path.register(watchService,
-                StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
+                StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
         keyPathMap.put(key, path);
 
 
@@ -62,7 +62,7 @@ public class WatchServiceRecursive {
                 final Path changed = (Path) event.context();
                 String fileDirectory = rootPath.getFileName().toString();
 
-                if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
+                if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE || event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
                     //this is not a complete path
                     Path path = (Path) event.context(); //name of file
 
